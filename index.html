@@ -407,7 +407,7 @@
 
 <script>
 $(function() {
-    const API_BASE = 'http://127.0.0.1:5000';
+    const API_BASE = window.location.origin;
     let currentType = 'hot_news';
     
     // 按钮名称到API端点的映射
@@ -443,32 +443,45 @@ $(function() {
     function loadContent(type) {
         showLoading();
         
-        // 获取对应的API端点
-        const apiEndpoint = apiEndpointMap[type] || 'hot_news';
-        
         $.ajax({
-            url: `${API_BASE}/api/${apiEndpoint}`,
+            url: 'hotspot_data.json',
             method: 'GET',
             dataType: 'json',
-            success: function(response) {
-                console.log('API Response:', response);
+            success: function(data) {
+                console.log('Data loaded:', data);
                 hideLoading();
-                if (response && response.data && response.data.length > 0) {
-                    renderContent(type, response.data);
+                
+                // 根据类型获取对应的数据
+                let dataKey;
+                switch(type) {
+                    case 'hot_news':
+                        dataKey = '热点资讯';
+                        break;
+                    case 'today_hotspot':
+                        dataKey = '今日热点';
+                        break;
+                    case 'community_posts':
+                        dataKey = '公社热帖';
+                        break;
+                    case 'financial_calendar':
+                        dataKey = '财经日历';
+                        break;
+                    default:
+                        dataKey = '热点资讯';
+                }
+                
+                const filteredData = data[dataKey] || [];
+                
+                if (filteredData && filteredData.length > 0) {
+                    renderContent(type, filteredData);
                 } else {
                     showError('暂无数据');
                 }
             },
             error: function(xhr, status, error) {
-                console.error('API Error Details:', {
-                    status: xhr.status,
-                    statusText: xhr.statusText,
-                    responseText: xhr.responseText,
-                    error: error
-                });
+                console.error('Data load error:', error);
                 hideLoading();
-                showError('加载失败: ' + (xhr.responseJSON?.error || '网络错误'));
-                console.error('API Error:', error);
+                showError('加载数据失败，请确保数据文件存在');
             }
         });
     }

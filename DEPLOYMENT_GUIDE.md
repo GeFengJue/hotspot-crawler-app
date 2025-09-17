@@ -59,7 +59,7 @@ jobs:
     
     steps:
     - name: Checkout code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       
     - name: Setup Python
       uses: actions/setup-python@v4
@@ -71,14 +71,22 @@ jobs:
       
     - name: Build static files
       run: |
-        # 这里可以添加构建步骤（如果需要）
-        echo "Static files ready for deployment"
+        mkdir -p dist
+        cp index.html dist/
+        cp -r functions/ dist/functions/ || true
+        cp _redirects dist/ || true
+        
+    - name: Setup Pages
+      uses: actions/configure-pages@v4
+      
+    - name: Upload artifact
+      uses: actions/upload-pages-artifact@v4
+      with:
+        path: 'dist'
         
     - name: Deploy to GitHub Pages
-      uses: peaceiris/actions-gh-pages@v3
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./
+      id: deployment
+      uses: actions/deploy-pages@v4
 ```
 
 ## 第三步：配置定时任务（GitHub Actions）
@@ -100,7 +108,9 @@ jobs:
     
     steps:
     - name: Checkout code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # 获取完整历史记录用于提交
       
     - name: Setup Python
       uses: actions/setup-python@v4
@@ -113,13 +123,27 @@ jobs:
     - name: Run crawler
       run: python complete_hotspot_crawler.py
       
-    - name: Commit and push database updates
+    - name: Check for database changes
+      id: check-changes
       run: |
-        git config --local user.email "action@github.com"
-        git config --local user.name "GitHub Action"
+        if git diff --quiet hotspot_data.db; then
+          echo "changes=false" >> $GITHUB_OUTPUT
+        else
+          echo "changes=true" >> $GITHUB_OUTPUT
+        fi
+        
+    - name: Commit and push database updates
+      if: steps.check-changes.outputs.changes == 'true'
+      run: |
+        git config --local user.email "github-actions[bot]@users.noreply.github.com"
+        git config --local user.name "github-actions[bot]"
         git add hotspot_data.db
-        git commit -m "Auto-update database $(date)" || echo "No changes to commit"
+        git commit -m "Auto-update database $(date +'%Y-%m-%d %H:%M:%S')"
         git push
+        
+    - name: No changes notification
+      if: steps.check-changes.outputs.changes == 'false'
+      run: echo "No database changes detected"
 ```
 
 ## 第四步：Cloudflare Pages 部署
