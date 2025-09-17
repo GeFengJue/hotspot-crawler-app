@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>洞洞侠|热点聚焦</title>
+    <script src="https://hm.baidu.com/hm.js?423edf2a3e642c55a0df7f5063f8f22c"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+    <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=0,viewport-fit=cover">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/layui@2.8.18/dist/css/layui.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/layui@2.8.18/dist/layui.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: #f5f5f5;
+        }
+
+        .ztactive {
+            background: #eee !important;
+        }
+
+        .flex {
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+        }
+
+        .rank {
+            max-width: 100%;
+            padding: 0;
+            background: white;
+        }
+
+        .rank .item {
+            padding: 12px 15px;
+            border-bottom: 1px solid #f2f2f2;
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .rank .item .no {
+            width: 24px;
+            height: 24px;
+            line-height: 24px;
+            text-align: center;
+            background: #f0f0f0;
+            border-radius: 4px;
+            margin-right: 12px;
+            font-size: 12px;
+            color: #666;
+            flex-shrink: 0;
+        }
+
+        .rank .item:nth-of-type(1) .no {
+            background: #EA3F40;
+            color: white;
+        }
+
+        .rank .item:nth-of-type(2) .no {
+            background: #F19F55;
+            color: white;
+        }
+
+        .rank .item:nth-of-type(3) .no {
+            background: #F6C85F;
+            color: white;
+        }
+
+        .rank .item .info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .rank .item .info-title {
+            font-size: 14px;
+            line-height: 1.4;
+            margin-bottom: 6px;
+            display: block;
+        }
+
+        .rank .item .info-title a {
+            color: #e74c3c;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .rank .item .info-title a:hover {
+            color: #c0392b;
+            text-decoration: underline;
+        }
+
+        .rank .item .info-desc {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #999;
+        }
+
+        .rank .item .time {
+            color: #999;
+        }
+
+        .rank .item .resource {
+            color: #666;
+        }
+
+        .tag {
+            border: 1px solid #BCBCBC;
+            color: #7A7A7A;
+            border-radius: 2px;
+            margin-right: 5px;
+            padding: 0 3px;
+            font-size: 12px;
+            display: inline-block;
+        }
+
+        .btn-active {
+            color: #e74c3c !important;
+            border-bottom: 2px solid #e74c3c !important;
+            background: white !important;
+        }
+
+        .time-active {
+            color: #000 !important;
+            font-weight: bold;
+        }
+
+        .subtag-active {
+            background: #FAEBEA !important;
+            color: #D6423A !important;
+            border-color: #D6423A !important;
+        }
+
+        .title {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 9999;
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header-banner {
+            background: #EA3E3E;
+            background-size: 100% 100%;
+            padding: 12px 0;
+            font-size: 16px;
+            font-weight: bold;
+            text-align: center;
+            color: white;
+            position: relative;
+        }
+
+        .nav-buttons {
+            width: 100%;
+            border-radius: 0;
+            box-shadow: 0 1px 5px rgba(0, 0, 0, .1);
+            display: flex;
+            background: white;
+        }
+
+        .nav-buttons button {
+            flex: 1;
+            border-radius: 0;
+            margin-left: 0;
+            border: none;
+            padding: 10px 5px;
+            font-size: 13px;
+            background: white;
+            color: #666;
+            transition: all 0.2s ease;
+        }
+
+        .nav-buttons button:hover {
+            color: #e74c3c;
+        }
+
+        .content-area {
+            margin-top: 120px;
+            padding-bottom: 20px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        .error {
+            text-align: center;
+            padding: 40px;
+            color: #e74c3c;
+        }
+
+        .filter-section {
+            padding: 10px 15px;
+            background: white;
+            border-bottom: 1px solid #f2f2f2;
+            display: none;
+        }
+
+        .filter-section.active {
+            display: block;
+        }
+
+        .subtag {
+            font-size: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-top: 5px;
+            padding: 3px 8px;
+            margin-right: 5px;
+            background: white;
+            color: #666;
+            cursor: pointer;
+        }
+
+        .time-filter {
+            color: #ccc;
+            cursor: pointer;
+            margin: 0 5px;
+        }
+
+        /* 响应式设计优化 */
+        @media (max-width: 768px) {
+            .nav-buttons button {
+                font-size: 12px;
+                padding: 10px 5px;
+                min-height: 44px;
+                min-width: 60px;
+            }
+            
+            .rank .item {
+                padding: 12px;
+            }
+            
+            .rank .item .info-title {
+                font-size: 14px;
+                line-height: 1.4;
+            }
+            
+            .rank .item .info-title a {
+                font-size: 14px;
+            }
+            
+            .content-area {
+                margin-top: 110px;
+            }
+            
+            .header-banner {
+                padding: 15px 0;
+                font-size: 18px;
+            }
+            
+            #closeMe {
+                top: 12px;
+                right: 12px;
+                padding: 4px 10px;
+                font-size: 13px;
+            }
+            
+            .panel-heading {
+                font-size: 14px !important;
+                padding: 10px 12px !important;
+            }
+            
+            .list-group-item {
+                padding: 10px 12px;
+                font-size: 13px;
+            }
+        }
+        
+        /* 超小屏幕优化 */
+        @media (max-width: 480px) {
+            .nav-buttons button {
+                font-size: 11px;
+                padding: 8px 3px;
+                min-width: 50px;
+            }
+            
+            .rank .item {
+                padding: 10px;
+            }
+            
+            .rank .item .no {
+                width: 22px;
+                height: 22px;
+                line-height: 22px;
+                margin-right: 8px;
+                font-size: 11px;
+            }
+            
+            .rank .item .info-title {
+                font-size: 13px;
+            }
+            
+            .rank .item .info-desc {
+                font-size: 11px;
+            }
+            
+            .header-banner {
+                font-size: 16px;
+                padding: 12px 0;
+            }
+            
+            .content-area {
+                margin-top: 100px;
+            }
+        }
+        
+        /* 平板设备优化 */
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .nav-buttons button {
+                font-size: 14px;
+                padding: 12px 8px;
+            }
+            
+            .header-banner {
+                font-size: 20px;
+                padding: 18px 0;
+            }
+            
+            .content-area {
+                margin-top: 130px;
+            }
+        }
+        
+        /* 防止文本溢出 */
+        .overflowtxt {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: 100px;
+        }
+        
+        /* 触摸设备优化 */
+        @media (hover: none) and (pointer: coarse) {
+            .nav-buttons button, #closeMe {
+                min-height: 44px;
+                min-width: 44px;
+            }
+            
+            .rank .item {
+                padding: 14px;
+            }
+            
+            .rank .item .info-title a {
+                font-size: 15px;
+            }
+        }
+        
+        /* 高DPI设备优化 */
+        @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+            .rank .item {
+                border-bottom-width: 0.5px;
+            }
+            
+            .nav-buttons {
+                box-shadow: 0 0.5px 2px rgba(0, 0, 0, .1);
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="rank">
+    <div class="el-card__body">
+        <!-- 标题栏 -->
+        <div class="title">
+            <div class="header-banner">
+                <span style="color:white;padding-right:2px;">洞洞侠|热点</span>聚焦
+                <button class="btn btn-xs btn-default" style="position:absolute;right:15px;color:white;background:rgba(255,255,255,0.2);border:none;border-radius:3px;top:9px;font-size:14px;padding:2px 8px;" id="closeMe">
+                    关闭
+                </button>
+            </div>
+            
+            <div class="nav-buttons">
+                <button class="btn btn-sm hotnews btn-active" name="hot_news">热点资讯</button>
+                <button class="btn btn-sm hotnews btn-default" name="today_hotspot">今日热点</button>
+                <button class="btn btn-sm hotnews btn-default" name="community_posts">公社热帖</button>
+                <button class="btn btn-sm hotnews btn-default" name="financial_calendar">财经日历</button>
+            </div>
+        </div>
+
+        <!-- 内容区域 -->
+        <div class="content-area">
+            <div class="loading" id="loading">
+                <i class="layui-icon layui-icon-loading layui-anim layui-anim-rotate"></i>
+                <div style="margin-top:10px;">加载中...</div>
+            </div>
+            
+            <div id="hotnews" style="display:none;"></div>
+            
+            <div class="error" id="error" style="display:none;">
+                <i class="layui-icon layui-icon-face-cry"></i>
+                <div style="margin-top:10px;">加载失败，请刷新重试</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+$(function() {
+    const API_BASE = 'http://127.0.0.1:5000';
+    let currentType = 'hot_news';
+    
+    // 按钮名称到API端点的映射
+    const apiEndpointMap = {
+        'hot_news': 'hot_news',
+        'today_hotspot': 'today_hotspot',
+        'community_posts': 'hot_news?type=公社热帖',
+        'financial_calendar': 'financial_calendar'
+    };
+    
+    // 初始化页面
+    loadContent(currentType);
+    
+    // 导航按钮点击事件
+    $(".hotnews").click(function() {
+        $(".hotnews").removeClass('btn-active').addClass('btn-default');
+        $(this).removeClass('btn-default').addClass('btn-active');
+        
+        currentType = $(this).attr('name');
+        loadContent(currentType);
+    });
+    
+    // 关闭按钮
+    $("#closeMe").click(function() {
+        if (window.parent && window.parent !== window) {
+            window.parent.postMessage('closeHotspot', '*');
+        } else {
+            alert('关闭功能仅在iframe中可用');
+        }
+    });
+
+    // 加载内容函数
+    function loadContent(type) {
+        showLoading();
+        
+        // 获取对应的API端点
+        const apiEndpoint = apiEndpointMap[type] || 'hot_news';
+        
+        $.ajax({
+            url: `${API_BASE}/api/${apiEndpoint}`,
+            method: 'GET',
+            dataType: 'json',
+            success: function(response) {
+                console.log('API Response:', response);
+                hideLoading();
+                if (response && response.data && response.data.length > 0) {
+                    renderContent(type, response.data);
+                } else {
+                    showError('暂无数据');
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('API Error Details:', {
+                    status: xhr.status,
+                    statusText: xhr.statusText,
+                    responseText: xhr.responseText,
+                    error: error
+                });
+                hideLoading();
+                showError('加载失败: ' + (xhr.responseJSON?.error || '网络错误'));
+                console.error('API Error:', error);
+            }
+        });
+    }
+    
+    // 渲染内容
+    function renderContent(type, data) {
+        let html = '';
+        
+        // 今日热点特殊处理 - 面板式UI
+        if (type === 'today_hotspot') {
+            html = `<div class="list" style="margin-top:85px;" id="hotnews"><div id="chaosha">`;
+            
+            // 按日期分组数据
+            const groupedData = {};
+            data.forEach(item => {
+                const date = item.date || item.time?.split(' ')[0] || '未知日期';
+                if (!groupedData[date]) {
+                    groupedData[date] = [];
+                }
+                groupedData[date].push(item);
+            });
+            
+            // 生成面板式UI
+            Object.keys(groupedData).sort().reverse().forEach(date => {
+                const items = groupedData[date];
+                html += `<div class="panel panel-danger">
+                    <div class="panel-heading">${date}</div>
+                    <div class="panel-body">`;
+                
+                items.forEach(item => {
+                    const title = item.title || item.content || item.event || '';
+                    const keywords = item.keywords || item.tags || '无关键词';
+                    const heat = item.heat || item.hot_value || 0;
+                    
+                    html += `
+                        <div class="keyword"><b>${title}</b></div>
+                        <div style="color:#999;">关键词：<i style="color:red;">${keywords}</i><span style="margin-left:40px;">热度值：${heat}</span></div>
+                    `;
+                });
+                
+                html += `</div></div>`;
+            });
+            
+            html += `</div></div>`;
+        }
+        // 财经日历特殊处理 - 面板式UI
+        else if (type === 'financial_calendar') {
+            html = `<div class="list" style="margin-top:85px;" id="hotnews">`;
+            
+            // 按日期分组数据
+            const groupedData = {};
+            data.forEach(item => {
+                const date = item.date || item.time?.split(' ')[0] || '未知日期';
+                if (!groupedData[date]) {
+                    groupedData[date] = [];
+                }
+                groupedData[date].push(item);
+            });
+            
+            // 生成面板式UI
+            Object.keys(groupedData).sort().forEach(date => {
+                const items = groupedData[date];
+                html += `<div class="panel panel-danger" style="font-size:12px;width:96%;margin-left:1.4%;">
+                    <div class="panel-heading" style="font-size:16px;font-weight:bold;">${date}</div>
+                    <ul class="list-group">`;
+                
+                items.forEach(item => {
+                    const title = item.title || item.content || item.event || '';
+                    html += `<li class="list-group-item">${title}</li>`;
+                });
+                
+                html += `</ul></div>`;
+            });
+            
+            html += `<div style="height:10px;"></div></div>`;
+        } else {
+            // 其他类型保持原有样式
+            data.forEach((item, index) => {
+                const rank = index + 1;
+                const heat = item.heat || item.hot_value || 0;
+                const time = item.time || item.publish_time || item.date || '';
+                const title = item.title || item.content || item.event || '';
+                const url = item.url || item.link || '#';
+                
+                // 热点资讯和公社热帖的序号样式
+                let noStyle = '';
+                if (type === 'hot_news' || type === 'gongshe_hot') {
+                    if (rank === 1) {
+                        noStyle = 'style="color:white;background-color:#ff0000;width:20px;height:20px;text-align:center;line-height:20px;"';
+                    } else if (rank === 2) {
+                        noStyle = 'style="color:white;background-color:#ffa500;width:20px;height:20px;text-align:center;line-height:20px;"';
+                    } else if (rank === 3) {
+                        noStyle = 'style="color:white;background-color:#ffff00;width:20px;height:20px;text-align:center;line-height:20px;"';
+                    } else {
+                        noStyle = 'style="color:blue;"';
+                    }
+                }
+                
+                html += `
+                    <div class="item flex">
+                        <div class="no" ${noStyle}>${rank <= 3 ? rank : rank}</div>
+                        <div class="info">
+                            <div class="info-title"><a href="${url}" style="color:red;font-size:14px;text-decoration:none;" target="_blank">${title}</a></div>
+                            <div class="info-desc flexr0c"><span class="time" style="padding-top:3px;"> ${time} </span>
+                                <div class="resource">
+                                    <div data-index="0" class="overflowtxt"><span style="width:90px;display:inline-block;">热度：${heat}</span></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+        
+        $("#hotnews").html(html).show();
+    }
+    
+    function showLoading() {
+        $("#loading").show();
+        $("#hotnews").hide();
+        $("#error").hide();
+    }
+    
+    function hideLoading() {
+        $("#loading").hide();
+    }
+    
+    function showError(message) {
+        $("#error").show().find('div').text(message);
+        $("#hotnews").hide();
+    }
+    
+    // 百度统计
+    var _hmt = _hmt || [];
+    (function() {
+        var hm = document.createElement("script");
+        hm.src = "https://hm.baidu.com/hm.js?423edf2a3e642c55a0df7f5063f8f22c";
+        var s = document.getElementsByTagName("script")[0]; 
+        s.parentNode.insertBefore(hm, s);
+    })();
+});
+</script>
+</body>
+</html>

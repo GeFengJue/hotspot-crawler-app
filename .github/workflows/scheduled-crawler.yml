@@ -1,0 +1,49 @@
+name: Scheduled Data Crawling
+
+on:
+  schedule:
+    - cron: '*/30 * * * *'  # 每30分钟执行一次
+  workflow_dispatch:
+
+jobs:
+  crawl:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # 获取完整历史记录用于提交
+      
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+        
+    - name: Install dependencies
+      run: pip install -r requirements.txt
+      
+    - name: Run crawler
+      run: python complete_hotspot_crawler.py
+      
+    - name: Check for database changes
+      id: check-changes
+      run: |
+        if git diff --quiet hotspot_data.db; then
+          echo "changes=false" >> $GITHUB_OUTPUT
+        else
+          echo "changes=true" >> $GITHUB_OUTPUT
+        fi
+        
+    - name: Commit and push database updates
+      if: steps.check-changes.outputs.changes == 'true'
+      run: |
+        git config --local user.email "github-actions[bot]@users.noreply.github.com"
+        git config --local user.name "github-actions[bot]"
+        git add hotspot_data.db
+        git commit -m "Auto-update database $(date +'%Y-%m-%d %H:%M:%S')"
+        git push
+        
+    - name: No changes notification
+      if: steps.check-changes.outputs.changes == 'false'
+      run: echo "No database changes detected"

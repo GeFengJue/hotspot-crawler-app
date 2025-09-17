@@ -1,0 +1,50 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+        
+    - name: Install dependencies
+      run: pip install -r requirements.txt
+      
+    - name: Setup Pages
+      uses: actions/configure-pages@v3
+      
+    - name: Build static site
+      run: |
+        # 创建用于GitHub Pages的静态文件
+        mkdir -p ./docs
+        cp index.html ./docs/
+        cp -r static ./docs/ 2>/dev/null || true
+        echo "Static site built for GitHub Pages"
+        
+    - name: Upload artifact
+      uses: actions/upload-pages-artifact@v2
+      with:
+        path: ./docs
+        
+    - name: Deploy to GitHub Pages
+      id: deployment
+      uses: actions/deploy-pages@v2

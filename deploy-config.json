@@ -1,0 +1,52 @@
+{
+  "name": "hotspot-crawler-app",
+  "version": "1.0.0",
+  "description": "热点资讯爬虫应用 - 包含爬虫、数据库、API和前端界面",
+  "main": "api_server.py",
+  "scripts": {
+    "start": "python api_server.py",
+    "crawl": "python complete_hotspot_crawler.py",
+    "static": "python static_server.py",
+    "scheduled": "python scheduled_crawler.py",
+    "build": "echo 'No build process needed for Python app'"
+  },
+  "dependencies": {
+    "flask": "^2.3.3",
+    "flask-cors": "^4.0.0",
+    "requests": "^2.31.0",
+    "beautifulsoup4": "^4.12.2",
+    "lxml": "^4.9.3",
+    "sqlite3": "builtin"
+  },
+  "devDependencies": {},
+  "engines": {
+    "node": ">=14.0.0",
+    "python": ">=3.8"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/hotspot-crawler-app.git"
+  },
+  "keywords": [
+    "crawler",
+    "hotspot",
+    "news",
+    "api",
+    "flask",
+    "python"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "deploy": {
+    "githubPages": {
+      "branch": "gh-pages",
+      "folder": "dist",
+      "cname": "your-domain.com"
+    },
+    "cloudflarePages": {
+      "buildCommand": "python -m py_compile *.py",
+      "buildOutput": "./",
+      "pythonVersion": "3.11"
+    }
+  }
+}
