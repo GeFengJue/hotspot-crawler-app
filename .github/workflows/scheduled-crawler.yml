@@ -71,8 +71,6 @@ jobs:
         # 如果有API服务运行，可以在这里添加重启逻辑
         # 在实际部署中，API服务应该配置为自动重新加载数据
         echo "如果使用独立的API服务器，请确保重启服务以加载最新数据"
-          echo "changes=false" >> $GITHUB_OUTPUT
-        fi
         
     - name: Generate update summary
       run: |
