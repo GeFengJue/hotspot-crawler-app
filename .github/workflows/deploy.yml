@@ -6,6 +6,11 @@ on:
   pull_request:
     branches: [ main ]
   workflow_dispatch:
+  # 在定时爬虫任务完成后触发部署
+  workflow_run:
+    workflows: ["Scheduled Data Crawling"]
+    types: [completed]
+    branches: [main]
 
 permissions:
   contents: read
