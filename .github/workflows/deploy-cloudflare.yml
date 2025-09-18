@@ -56,7 +56,7 @@ jobs:
       with:
         apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        projectName: hotspot-crawler-app  # 替换为您的Cloudflare Pages项目名称
+        projectName: ddxia  # Cloudflare Pages项目名称
         directory: dist
         gitHubToken: ${{ secrets.GITHUB_TOKEN }}
         
