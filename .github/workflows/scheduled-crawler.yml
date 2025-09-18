@@ -109,6 +109,56 @@ jobs:
         git commit -m "$commit_message"
         git push
         
+        # 有数据更新时重置计数器
+        echo "0" > no_changes_counter.txt
+        echo "数据已更新，重置未更新计数器" >> update_summary.md
+        
     - name: No changes notification
       if: steps.check-changes.outputs.changes == 'false'
-      run: echo "No database changes detected"
+      run: |
+        echo "No database changes detected"
+        
+        # 检查连续未更新次数
+        if [ -f no_changes_counter.txt ]; then
+          current_count=$(cat no_changes_counter.txt)
+          new_count=$((current_count + 1))
+        else
+          new_count=1
+        fi
+        
+        echo $new_count > no_changes_counter.txt
+        
+        # 检查是否达到提醒阈值（16次 = 4小时）
+        if [ $new_count -ge 16 ]; then
+          echo "⚠️ 连续 $new_count 次未抓取到新内容！请检查爬虫程序" >> update_summary.md
+          echo "连续 $new_count 次未更新，可能需要人工干预" > critical_alert.md
+          
+          # 重置计数器
+          echo "0" > no_changes_counter.txt
+        else
+          echo "连续未更新次数: $new_count" >> update_summary.md
+        fi
+        
+    - name: Check daily data freshness
+      run: |
+        # 检查当天是否有数据更新
+        current_date=$(date +%Y-%m-%d)
+        if ! grep -q "$current_date" hotspot_data.json 2>/dev/null; then
+          echo "❌ 今天 ($current_date) 未抓取到任何新内容！" >> update_summary.md
+          echo "当日无数据更新警报" > daily_alert.md
+        fi
+        
+    - name: Send critical alerts
+      if: always()
+      run: |
+        # 如果有严重警报，在这里可以添加通知逻辑（如发送邮件、Slack消息等）
+        if [ -f critical_alert.md ]; then
+          echo "发送严重警报..."
+          cat critical_alert.md
+          # 这里可以集成邮件、Slack、Discord等通知方式
+        fi
+        
+        if [ -f daily_alert.md ]; then
+          echo "发送当日无数据警报..."
+          cat daily_alert.md
+        fi
