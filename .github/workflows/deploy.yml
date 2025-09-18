@@ -35,6 +35,19 @@ jobs:
         # 复制必要的文件到部署目录
         mkdir -p dist
         cp index.html dist/
+        # 确保hotspot_data.json文件存在
+        if [ -f hotspot_data.json ]; then
+          cp hotspot_data.json dist/
+        else
+          # 如果不存在，尝试复制最新的数据文件
+          latest_json=$(ls -t hotspot_data_*.json 2>/dev/null | head -1)
+          if [ -n "$latest_json" ]; then
+            cp "$latest_json" dist/hotspot_data.json
+          else
+            echo "警告：未找到数据文件，将创建空文件"
+            echo '{"热点资讯": [], "今日热点": [], "财经日历": [], "公社热帖": []}' > dist/hotspot_data.json
+          fi
+        fi
         cp -r functions/ dist/functions/ || true
         cp _redirects dist/ || true
         
