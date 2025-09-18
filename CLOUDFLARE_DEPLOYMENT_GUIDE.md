@@ -31,10 +31,31 @@ GitHub Pages 数据已更新，但 Cloudflare Pages 数据未同步更新。
    - Value: 您的Cloudflare Account ID
 
 ### 步骤 2：确认 Cloudflare Pages 项目名称
-在 `.github/workflows/deploy-cloudflare.yml` 中确认项目名称：
+
+#### 1. 查看当前配置文件中的项目名称
+打开文件 `.github/workflows/deploy-cloudflare.yml`，找到以下配置：
 ```yaml
-projectName: hotspot-crawler-app  # 确保这与您的Cloudflare Pages项目名称一致
+projectName: hotspot-crawler-app  # 替换为您的Cloudflare Pages项目名称
 ```
+
+#### 2. 获取您的实际Cloudflare Pages项目名称
+登录 Cloudflare Dashboard → Pages → 找到您的项目，项目名称显示在项目卡片上。
+
+#### 3. 修改配置文件（如果需要）
+如果您的Cloudflare Pages项目名称不是 `hotspot-crawler-app`，请修改配置文件：
+```yaml
+# 修改为您的实际项目名称
+projectName: your-actual-project-name  # 例如: my-hotspot-app, financial-data, 等
+```
+
+#### 4. 常见项目名称示例
+- 如果您的GitHub仓库名是 `hotspot-crawler-app`，项目名称通常是相同的
+- 如果使用自定义名称，可能是：`my-financial-data`, `stock-hotspot`, `investment-news` 等
+- 可以在Cloudflare Pages控制台查看确切的项目名称
+
+#### 5. 验证方法
+部署成功后，您的Cloudflare Pages URL格式为：
+`https://your-project-name.pages.dev`
 
 ### 步骤 3：手动触发首次部署
 1. 在 GitHub 仓库的 Actions 标签页
