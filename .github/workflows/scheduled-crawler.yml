@@ -57,6 +57,23 @@ jobs:
           echo "changes=false" >> $GITHUB_OUTPUT
         fi
         
+    - name: Import data to database
+      if: steps.check-changes.outputs.changes == 'true'
+      run: python database_manager.py
+      
+    - name: Trigger API deployment
+      if: steps.check-changes.outputs.changes == 'true'
+      run: |
+        # 数据已更新，API服务需要重新部署以提供最新数据
+        echo "✅ 数据库已更新，包含最新热点数据"
+        echo "API服务将在下次请求时自动提供最新数据"
+        
+        # 如果有API服务运行，可以在这里添加重启逻辑
+        # 在实际部署中，API服务应该配置为自动重新加载数据
+        echo "如果使用独立的API服务器，请确保重启服务以加载最新数据"
+          echo "changes=false" >> $GITHUB_OUTPUT
+        fi
+        
     - name: Generate update summary
       run: |
         # 生成更新摘要

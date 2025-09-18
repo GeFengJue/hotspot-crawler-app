@@ -1,0 +1,66 @@
+name: Deploy API Service
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'api_server.py'
+      - 'database_manager.py'
+      - 'requirements.txt'
+      - 'hotspot_data.db'
+  workflow_dispatch:
+  # 在定时爬虫任务完成后触发API部署
+  workflow_run:
+    workflows: ["Scheduled Data Crawling"]
+    types: [completed]
+    branches: [main]
+
+jobs:
+  deploy-api:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+        
+    - name: Install dependencies
+      run: pip install -r requirements.txt
+      
+    - name: Start API Server
+      run: |
+        # 启动API服务
+        echo "🚀 启动热点数据API服务..."
+        nohup python api_server.py > api_server.log 2>&1 &
+        
+        # 等待服务启动
+        sleep 5
+        
+        # 检查服务是否正常运行
+        if curl -f http://localhost:5000/api/statistics > /dev/null 2>&1; then
+          echo "✅ API服务启动成功"
+          echo "API服务运行在: http://localhost:5000"
+        else
+          echo "❌ API服务启动失败"
+          cat api_server.log
+          exit 1
+        fi
+        
+    - name: Keep alive (for testing)
+      if: always()
+      run: |
+        # 在测试期间保持服务运行
+        echo "API服务将持续运行用于测试"
+        echo "查看日志: cat api_server.log"
+        echo "测试API: curl http://localhost:5000/api/statistics"
+        
+        # 在实际生产环境中，这里应该部署到云平台
+        echo "生产环境建议部署到:"
+        echo "- Heroku"
+        echo "- Railway"
+        echo "- DigitalOcean App Platform"
+        echo "- AWS Elastic Beanstalk"
