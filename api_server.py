@@ -23,6 +23,7 @@ def index():
             '/api/hot_news': '获取热点资讯数据',
             '/api/today_hotspot': '获取今日热点数据', 
             '/api/financial_calendar': '获取财经日历数据',
+            '/api/community_posts': '获取公社热帖数据',
             '/api/statistics': '获取数据统计'
         }
     })
@@ -93,6 +94,27 @@ def get_financial_calendar():
             'error': str(e)
         }), 500
 
+@app.route('/api/community_posts')
+def get_community_posts():
+    """获取公社热帖数据"""
+    try:
+        limit = request.args.get('limit', 50, type=int)
+        
+        data = db_manager.get_community_posts(limit)
+        
+        return jsonify({
+            'success': True,
+            'count': len(data),
+            'data': data
+        })
+        
+    except Exception as e:
+        logging.error(f"获取公社热帖数据失败: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
 @app.route('/api/statistics')
 def get_statistics():
     """获取数据统计"""
@@ -146,6 +168,7 @@ if __name__ == '__main__':
     print("  GET /api/hot_news          - 获取热点资讯数据")
     print("  GET /api/today_hotspot      - 获取今日热点数据")
     print("  GET /api/financial_calendar - 获取财经日历数据")
+    print("  GET /api/community_posts    - 获取公社热帖数据")
     print("  GET /api/statistics         - 获取数据统计")
     print("  GET /api/search             - 搜索数据")
     print("\n服务器运行在: http://127.0.0.1:5000")

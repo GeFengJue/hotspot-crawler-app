@@ -1,78 +1,107 @@
-# hotspot-crawler-app
-`热点资讯爬虫应用 - 包含爬虫、数据库、API和前端`
+# 热点聚焦数据抓取系统
 
-## 🚀 功能特性
+这是一个用于抓取和展示热点资讯、今日热点、公社热帖、财经日历等内容的完整系统。
 
-- **多源数据爬取**: 支持同花顺、公社、财联社等多个数据源
-- **实时数据更新**: 每30分钟自动抓取最新热点资讯
-- **RESTful API**: 提供完整的数据接口服务
-- **响应式前端**: 支持桌面和移动端访问
-- **自动化部署**: 支持GitHub Pages和Cloudflare Pages部署
+## 功能特性
 
-## 📦 部署配置
+- 🔥 **热点资讯**：实时抓取热点新闻资讯
+- 📈 **今日热点**：展示当日热门话题
+- 💬 **公社热帖**：社区热门讨论帖子
+- 📅 **财经日历**：重要财经事件日历
+- 🌐 **RESTful API**：提供完整的数据接口
+- 📱 **响应式前端**：适配各种设备的界面
 
-### GitHub Actions 自动化
+## 快速开始
 
-项目包含两个GitHub Actions工作流：
-
-1. **定时爬虫任务** (`scheduled-crawler.yml`)
-   - 每30分钟自动执行数据抓取
-   - 自动提交数据库更新
-
-2. **自动部署** (`deploy.yml`)
-   - 推送代码时自动部署到GitHub Pages
-   - 支持手动触发部署
-
-### 部署步骤
-
-1. **推送到GitHub仓库**
-   ```bash
-   git add .
-   git commit -m "初始化项目"
-   git branch -M main
-   git remote add origin https://github.com/your-username/hotspot-crawler-app.git
-   git push -u origin main
-   ```
-
-2. **启用GitHub Pages**
-   - 访问仓库的Settings → Pages
-   - 选择Source为"GitHub Actions"
-   - 保存设置
-
-3. **配置Cloudflare Pages** (可选)
-   - 连接GitHub仓库到Cloudflare Pages
-   - 构建命令: `python -m py_compile *.py`
-   - 输出目录: `.`
-
-## 🔧 本地开发
-
+### 1. 安装依赖
 ```bash
-# 安装依赖
 pip install -r requirements.txt
-
-# 启动API服务器
-python api_server.py
-
-# 启动静态文件服务器  
-python static_server.py
-
-# 执行数据爬取
-python complete_hotspot_crawler.py
 ```
 
-## 📊 API接口
+### 2. 启动API服务器
+```bash
+python api_server.py
+```
 
-- `GET /api/hotspots` - 获取所有热点数据
-- `GET /api/hotspots/today` - 获取今日热点
-- `GET /api/hotspots/date/2024-01-01` - 按日期获取热点
-- `GET /api/sources` - 获取数据源列表
+### 3. 启动静态文件服务器
+```bash
+python static_server.py
+```
 
-## 🌐 在线访问
+### 4. 访问前端
+打开浏览器访问：http://localhost:8081/index.html
 
-部署完成后可通过以下地址访问：
-- GitHub Pages: `https://your-username.github.io/hotspot-crawler-app/`
-- Cloudflare Pages: `https://your-project.pages.dev/`
+## API接口
 
-## 📝 许可证
+### 获取热点资讯
+```
+GET /api/hot_news
+参数：limit (可选，默认50)
+```
 
-MIT License
+### 获取今日热点
+```
+GET /api/today_hotspot
+参数：limit (可选，默认20)
+```
+
+### 获取公社热帖
+```
+GET /api/community_posts
+参数：limit (可选，默认50)
+```
+
+### 获取财经日历
+```
+GET /api/financial_calendar
+参数：limit (可选，默认50), date (可选，日期过滤)
+```
+
+### 获取数据统计
+```
+GET /api/statistics
+```
+
+## GitHub Actions 自动部署
+
+系统配置了GitHub Actions，每天自动运行5次抓取任务：
+- 北京时间 9:00
+- 北京时间 12:00  
+- 北京时间 15:00
+- 北京时间 18:00
+- 北京时间 21:00
+
+## 项目结构
+
+```
+├── api_server.py          # Flask API服务器
+├── database_manager.py    # 数据库管理
+├── fix_crawler.py         # 数据抓取修复工具
+├── hotspot_data.db        # SQLite数据库
+├── index.html             # 前端页面
+├── static_server.py       # 静态文件服务器
+├── .github/workflows/     # GitHub Actions配置
+│   └── hotspot-crawler.yml
+└── README.md              # 项目说明
+```
+
+## 部署说明
+
+1. 将项目上传到GitHub仓库
+2. 启用GitHub Pages（用于前端部署）
+3. GitHub Actions会自动运行定时抓取任务
+4. 数据会自动提交到仓库
+
+## 故障排除
+
+如果遇到数据加载失败：
+1. 检查API服务器是否运行：`http://127.0.0.1:5000/api/hot_news`
+2. 检查静态服务器是否运行：`http://localhost:8081`
+3. 确保数据库文件存在且可访问
+
+## 技术支持
+
+如有问题，请检查：
+- API服务器日志
+- 浏览器开发者工具控制台
+- GitHub Actions运行状态
