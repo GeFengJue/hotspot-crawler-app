@@ -497,7 +497,7 @@ $(function() {
             // 按日期分组数据
             const groupedData = {};
             data.forEach(item => {
-                const date = item.date || item.time?.split(' ')[0] || '未知日期';
+                const date = item.publish_time?.split(' ')[0] || '未知日期';
                 if (!groupedData[date]) {
                     groupedData[date] = [];
                 }
@@ -513,12 +513,11 @@ $(function() {
                 
                 items.forEach(item => {
                     const title = item.title || item.content || item.event || '';
-                    const keywords = item.keywords || item.tags || '无关键词';
                     const heat = item.heat || item.hot_value || 0;
                     
                     html += `
                         <div class="keyword"><b>${title}</b></div>
-                        <div style="color:#999;">关键词：<i style="color:red;">${keywords}</i><span style="margin-left:40px;">热度值：${heat}</span></div>
+                        <div style="color:#999;">热度值：${heat}</div>
                     `;
                 });
                 
@@ -534,7 +533,7 @@ $(function() {
             // 按日期分组数据
             const groupedData = {};
             data.forEach(item => {
-                const date = item.date || item.time?.split(' ')[0] || '未知日期';
+                const date = item.publish_time?.split(' ')[0] || '未知日期';
                 if (!groupedData[date]) {
                     groupedData[date] = [];
                 }
