@@ -1,0 +1,67 @@
+name: Deploy to Cloudflare Pages
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'index.html'
+      - 'hotspot_data.json'
+      - 'hotspot_data_*.json'
+  workflow_dispatch:
+  # 在定时爬虫任务完成后也触发Cloudflare部署
+  workflow_run:
+    workflows: ["Scheduled Data Crawling"]
+    types: [completed]
+    branches: [main]
+
+jobs:
+  deploy-cloudflare:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+        
+    - name: Install dependencies
+      run: pip install -r requirements.txt
+      
+    - name: Build for Cloudflare Pages
+      run: |
+        # 为Cloudflare Pages构建
+        mkdir -p dist
+        cp index.html dist/
+        
+        # 确保数据文件存在
+        if [ -f hotspot_data.json ]; then
+          cp hotspot_data.json dist/
+        else
+          # 使用最新的数据文件
+          latest_json=$(ls -t hotspot_data_*.json 2>/dev/null | head -1)
+          if [ -n "$latest_json" ]; then
+            cp "$latest_json" dist/hotspot_data.json
+          else
+            echo '{"热点资讯": [], "今日热点": [], "财经日历": [], "公社热帖": []}' > dist/hotspot_data.json
+          fi
+        fi
+        
+        echo "✅ Cloudflare Pages构建完成"
+        
+    - name: Deploy to Cloudflare Pages
+      uses: cloudflare/pages-action@v1
+      with:
+        apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        projectName: hotspot-crawler-app  # 替换为您的Cloudflare Pages项目名称
+        directory: dist
+        gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+        
+    - name: Notify deployment status
+      run: |
+        echo "🚀 Cloudflare Pages部署已触发"
+        echo "注意：Cloudflare CDN缓存可能需要几分钟刷新"
+        echo "请检查Cloudflare Dashboard确认部署状态"
