@@ -2,7 +2,7 @@ name: Scheduled Data Crawling
 
 on:
   schedule:
-    - cron: '*/30 * * * *'  # 每30分钟执行一次
+    - cron: '*/15 * * * *'  # 每15分钟执行一次
   workflow_dispatch:
 
 jobs:
@@ -23,25 +23,90 @@ jobs:
     - name: Install dependencies
       run: pip install -r requirements.txt
       
-    - name: Run crawler
-      run: python complete_hotspot_crawler.py
+    - name: Run crawler and get statistics
+      id: run-crawler
+      run: |
+        # 运行爬虫并捕获输出
+        python_output=$(python hotspot_crawler.py 2>&1)
+        echo "$python_output"
+        
+        # 提取数据统计信息
+        total_count=$(echo "$python_output" | grep "总共获取到" | awk '{print $3}')
+        echo "total_count=$total_count" >> $GITHUB_OUTPUT
+        
+        # 保存爬虫输出到文件用于后续步骤
+        echo "$python_output" > crawler_output.txt
+        
+    - name: Update hotspot data file
+      run: python update_hotspot_data.py
       
-    - name: Check for database changes
+    - name: Check for data changes
       id: check-changes
       run: |
-        if git diff --quiet hotspot_data.db; then
-          echo "changes=false" >> $GITHUB_OUTPUT
-        else
-          echo "changes=true" >> $GITHUB_OUTPUT
+        # 检查JSON文件的变化
+        json_changed=false
+        
+        if ! git diff --quiet hotspot_data.json; then
+          json_changed=true
         fi
         
-    - name: Commit and push database updates
+        if [ "$json_changed" = true ]; then
+          echo "changes=true" >> $GITHUB_OUTPUT
+          echo "json_changed=true" >> $GITHUB_OUTPUT
+        else
+          echo "changes=false" >> $GITHUB_OUTPUT
+        fi
+        
+    - name: Generate update summary
+      run: |
+        # 生成更新摘要
+        if [ -f crawler_output.txt ]; then
+          echo "📊 本次数据更新统计：" > update_summary.md
+          echo "==========================" >> update_summary.md
+          echo "" >> update_summary.md
+          
+          # 提取各类型数据数量
+          echo "📈 数据分类统计：" >> update_summary.md
+          grep "获取到" crawler_output.txt | while read line; do
+            echo "- $line" >> update_summary.md
+          done
+          
+          # 总数据量
+          if [ -n "${{ steps.run-crawler.outputs.total_count }}" ]; then
+            echo "" >> update_summary.md
+            echo "✅ 总共获取到 ${{ steps.run-crawler.outputs.total_count }} 条热点数据" >> update_summary.md
+          fi
+          
+          # 更新时间
+          echo "" >> update_summary.md
+          echo "🕐 更新时间: $(date '+%Y-%m-%d %H:%M:%S')" >> update_summary.md
+          
+          echo "更新摘要已生成"
+        fi
+        
+    - name: Commit and push data updates
       if: steps.check-changes.outputs.changes == 'true'
       run: |
         git config --local user.email "github-actions[bot]@users.noreply.github.com"
         git config --local user.name "github-actions[bot]"
-        git add hotspot_data.db
-        git commit -m "Auto-update database $(date +'%Y-%m-%d %H:%M:%S')"
+        
+        # 添加变化的文件
+        if [ "${{ steps.check-changes.outputs.json_changed }}" = "true" ]; then
+          git add hotspot_data.json
+        fi
+        
+        # 添加更新摘要文件
+        if [ -f update_summary.md ]; then
+          git add update_summary.md
+        fi
+        
+        # 生成提交信息
+        commit_message="Auto-update data files $(date +'%Y-%m-%d %H:%M:%S')"
+        if [ -n "${{ steps.run-crawler.outputs.total_count }}" ]; then
+          commit_message="📊 数据更新: ${{ steps.run-crawler.outputs.total_count }}条热点数据 $(date +'%H:%M:%S')"
+        fi
+        
+        git commit -m "$commit_message"
         git push
         
     - name: No changes notification

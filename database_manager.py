@@ -309,6 +309,33 @@ class DatabaseManager:
             if self.conn:
                 self.conn.close()
     
+    def get_community_posts(self, limit=50):
+        """获取公社热帖数据"""
+        if not self.connect():
+            return []
+        
+        try:
+            cursor = self.conn.cursor()
+            cursor.execute('''
+                SELECT * FROM hot_news 
+                WHERE type = '公社热帖' 
+                ORDER BY created_at DESC 
+                LIMIT ?
+            ''', (limit,))
+            
+            results = []
+            for row in cursor.fetchall():
+                results.append(dict(row))
+            
+            return results
+            
+        except sqlite3.Error as e:
+            logging.error(f"获取公社热帖数据失败: {e}")
+            return []
+        finally:
+            if self.conn:
+                self.conn.close()
+
     def get_data_statistics(self):
         """获取数据统计信息"""
         if not self.connect():
@@ -353,9 +380,17 @@ def main():
     # 创建数据库管理器
     db_manager = DatabaseManager()
     
-    # 导入最新的JSON数据
-    json_file = "complete_hotspot_data_20250917_173619.json"
-    db_manager.import_from_json(json_file)
+    # 获取并导入最新的JSON数据
+    import glob
+    import os
+    json_files = glob.glob("hotspot_data_*.json")
+    if json_files:
+        json_file = max(json_files, key=os.path.getmtime)
+        print(f"找到最新数据文件: {json_file}")
+        db_manager.import_from_json(json_file)
+    else:
+        print("未找到数据文件")
+        return
     
     # 显示数据统计
     stats = db_manager.get_data_statistics()
